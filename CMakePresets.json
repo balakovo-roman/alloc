@@ -1,0 +1,302 @@
+{
+    "version": 8,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "cmake-pedantic",
+            "hidden": true,
+            "warnings": {
+                "dev": true,
+                "deprecated": true,
+                "uninitialized": true,
+                "unusedCli": true,
+                "systemVars": false
+            },
+            "errors": {
+                "dev": true,
+                "deprecated": true
+            }
+        },
+        {
+            "name": "cpp",
+            "inherits": [
+                "cmake-pedantic"
+            ],
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Werror -Wpedantic -Wsign-conversion -Warray-bounds -Wimplicit-fallthrough",
+                "CMAKE_CXX_STANDARD": "17",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_CXX_EXTENSIONS": "OFF"
+            }
+        },
+        {
+            "name": "build",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "generator": "Ninja",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_MAKE_PROGRAM": "ninja"
+            }
+        },
+        {
+            "name": "gcc",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++"
+            }
+        },
+        {
+            "name": "release",
+            "inherits": [
+                "cpp",
+                "build",
+                "gcc"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG"
+            }
+        },
+        {
+            "name": "ci-asan",
+            "inherits": [
+                "release"
+            ],
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS_RELEASE": "-O2 -g -DNDEBUG -fsanitize=address,undefined -fno-omit-frame-pointer"
+            }
+        },
+        {
+            "name": "ci-tsan",
+            "inherits": [
+                "release"
+            ],
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS_RELEASE": "-Og -g -DNDEBUG -fsanitize=thread -fno-omit-frame-pointer"
+            }
+        },
+        {
+            "name": "ci-clang-tidy",
+            "inherits": [
+                "release"
+            ],
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy"
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": [
+                "cpp",
+                "build",
+                "gcc"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS_DEBUG": "-g3 -fno-omit-frame-pointer -fno-inline -O0"
+            }
+        },
+        {
+            "name": "coverage",
+            "inherits": [
+                "debug"
+            ],
+            "cacheVariables": {
+                "ENABLE_COVERAGE": "ON",
+                "CMAKE_CXX_FLAGS_DEBUG": "-g3 -fno-inline -O0 --coverage"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "release",
+            "configurePreset": "release"
+        },
+        {
+            "name": "ci-asan",
+            "configurePreset": "ci-asan"
+        },
+        {
+            "name": "ci-tsan",
+            "configurePreset": "ci-tsan"
+        },
+        {
+            "name": "ci-clang-tidy",
+            "configurePreset": "ci-clang-tidy"
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "coverage",
+            "configurePreset": "coverage"
+        },
+        {
+            "name": "generate-report",
+            "configurePreset": "coverage",
+            "targets": "coverage"
+        },
+        {
+            "name": "valgrind_tests",
+            "configurePreset": "debug",
+            "targets": "valgrind_tests"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "default",
+            "hidden": true,
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": true
+            }
+        },
+        {
+            "name": "release",
+            "configurePreset": "release",
+            "inherits": [
+                "default"
+            ]
+        },
+        {
+            "name": "ci-asan",
+            "configurePreset": "ci-asan",
+            "inherits": [
+                "default"
+            ]
+        },
+        {
+            "name": "ci-tsan",
+            "configurePreset": "ci-tsan",
+            "inherits": [
+                "default"
+            ]
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "release",
+            "configurePreset": "release",
+            "generators": [
+                "DEB"
+            ],
+            "configurations": [
+                "Release"
+            ],
+            "variables": {
+                "CPACK_DEBIAN_PACKAGE_MAINTAINER": "Lebedev Roman qwerty@gmail.ru",
+                "CPACK_DEBIAN_PACKAGE_DESCRIPTION": "A simple Hello World package"
+            }
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "release",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "release"
+                },
+                {
+                    "type": "build",
+                    "name": "release"
+                },
+                {
+                    "type": "package",
+                    "name": "release"
+                }
+            ]
+        },
+        {
+            "name": "ci-asan",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "ci-asan"
+                },
+                {
+                    "type": "build",
+                    "name": "ci-asan"
+                },
+                {
+                    "type": "test",
+                    "name": "ci-asan"
+                }
+            ]
+        },
+        {
+            "name": "ci-tsan",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "ci-tsan"
+                },
+                {
+                    "type": "build",
+                    "name": "ci-tsan"
+                },
+                {
+                    "type": "test",
+                    "name": "ci-tsan"
+                }
+            ]
+        },
+        {
+            "name": "ci-clang-tidy",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "ci-clang-tidy"
+                },
+                {
+                    "type": "build",
+                    "name": "ci-clang-tidy"
+                }
+            ]
+        },
+        {
+            "name": "coverage",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "coverage"
+                },
+                {
+                    "type": "build",
+                    "name": "coverage"
+                },
+                {
+                    "type": "build",
+                    "name": "generate-report"
+                }
+            ]
+        },
+        {
+            "name": "valgrind_tests",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "debug"
+                },
+                {
+                    "type": "build",
+                    "name": "debug"
+                },
+                {
+                    "type": "build",
+                    "name": "valgrind_tests"
+                }
+            ]
+        }
+    ]
+}
