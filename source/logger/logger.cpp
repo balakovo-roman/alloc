@@ -13,7 +13,7 @@ Logger& Logger::GetInstance()
     {
         instance_ = MakeLogger();
     }
-    
+
     return *instance_;
 }
 
