@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -10,6 +11,10 @@ class Logger
 {
    public:
     virtual ~Logger() = default;
+
+    static std::unique_ptr<Logger> MakeLogger();
+
+    static Logger& GetInstance();
 
     template <typename... Args>
     void Log(Args&&... args)
@@ -30,6 +35,10 @@ class Logger
 
    private:
     virtual void LogImpl(const std::string& message) = 0;
+
+    static inline std::unique_ptr<Logger> instance_ = nullptr;
 };
 
 }  // namespace logger
+
+#define LOG(...) logger::Logger::GetInstance().Log(__VA_ARGS__)
