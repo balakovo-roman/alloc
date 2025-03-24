@@ -20,11 +20,11 @@ class Logger
     void Log(Args&&... args)
     {
         std::ostringstream stream;
-        
+
         ((stream << std::forward<Args>(args) << ' '), ...);
-        
+
         std::string result = stream.str();
-        
+
         if (!result.empty() && result.back() == ' ')
         {
             result.pop_back();
@@ -41,4 +41,8 @@ class Logger
 
 }  // namespace logger
 
+#ifndef NDEBUG
 #define LOG(...) logger::Logger::GetInstance().Log(__VA_ARGS__)
+#else
+#define LOG(...) ((void)0)
+#endif
