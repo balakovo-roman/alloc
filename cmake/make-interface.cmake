@@ -1,0 +1,5 @@
+function(make_interface_lib target_name)
+    add_library(${target_name} INTERFACE)
+    target_sources(${target_name} INTERFACE ${ARGN})
+    add_library(interface::${target_name} ALIAS ${target_name})
+endfunction()
