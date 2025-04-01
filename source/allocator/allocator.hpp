@@ -71,7 +71,8 @@ T* BlockAllocator<T, BlockSize>::allocate(std::size_t count)
 }
 
 template <typename T, std::size_t BlockSize>
-void BlockAllocator<T, BlockSize>::deallocate(T* p, std::size_t n) noexcept
+void BlockAllocator<T, BlockSize>::deallocate(
+    [[maybe_unused]] T* p, [[maybe_unused]] std::size_t n) noexcept
 {
     LOG("Deallocation called for ", n, " elements at ", static_cast<void*>(p));
 }
