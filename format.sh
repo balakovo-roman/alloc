@@ -5,7 +5,7 @@ if ! command -v clang-format &> /dev/null; then
     exit 1
 fi
 
-find ./source -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' -o -name '*.c' \) \
+find ./source -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.ipp' -o -name '*.h' -o -name '*.c' \) \
     -exec echo "Formatting file: {}" \; \
     -exec clang-format -i {} +
 

@@ -5,20 +5,22 @@
 #include <numeric>
 
 #include "allocator/allocator.hpp"
+#include "containers/forward_list.hpp"
 #include "math/math.hpp"
 
 constexpr std::size_t BlockSize = 10;
-constexpr std::size_t ArraySize = BlockSize;
 
-using ValueType = std::pair<const int, int>;
-using CustomAllocator = allocator::BlockAllocator<ValueType, BlockSize>;
+using PairType = std::pair<const int, int>;
 
-template <typename Allocator = std::allocator<ValueType>>
-auto CreateMap(const std::array<int, ArraySize>& input)
+template <typename T>
+using CustomAllocator = allocator::BlockAllocator<T, BlockSize>;
+
+template <typename Allocator = std::allocator<PairType>>
+auto CreateMap()
 {
     std::map<int, int, std::less<>, Allocator> map;
 
-    for (const auto item : input)
+    for (const auto item : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
     {
         map.emplace_hint(map.end(), item, math::Factorial(item));
     }
@@ -26,22 +28,45 @@ auto CreateMap(const std::array<int, ArraySize>& input)
     return map;
 }
 
-template <typename Map>
-void PrintMap(const Map& map)
+template <typename Allocator = std::allocator<int>>
+auto CreateList()
 {
-    for (const auto& [key, value] : map)
+    containers::ForwardList<int, Allocator> list;
+
+    for (const auto item : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
     {
-        std::cout << key << ' ' << value << std::endl;
+        list.emplace_front(item);
+    }
+
+    return list;
+}
+
+template <typename Container>
+void Print(const Container& container)
+{
+    if constexpr (std::is_same_v<typename Container::value_type, PairType>)
+    {
+        for (const auto& [key, value] : container)
+        {
+            std::cout << key << ' ' << value << std::endl;
+        }
+    }
+    else
+    {
+        for (const auto& item : container)
+        {
+            std::cout << item << std::endl;
+        }
     }
 }
 
 int main()
 {
-    std::array<int, ArraySize> input;
-    std::iota(input.begin(), input.end(), 0U);
+    Print(CreateMap());
+    Print(CreateMap<CustomAllocator<PairType>>());
 
-    PrintMap(CreateMap(input));
-    PrintMap(CreateMap<CustomAllocator>(input));
+    Print(CreateList());
+    Print(CreateList<CustomAllocator<int>>());
 
     return 0;
 }
